@@ -1,0 +1,63 @@
+---
+# Source: nodeapi-chart/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodetester
+  namespace: test
+  labels:
+    name: nodetester
+    managed-by: vishal
+spec:   
+  replicas: 1
+  selector:
+    matchLabels:
+      name: nodetester
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: nodetester
+        name: nodetester
+        release: stable
+    spec:
+      containers:
+        - name: nodetester-cntr
+          image: "vishal4590/tester:v2"
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              value: dev
+            - name: PORT
+              value: "5000"
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 256Mi
+            requests:
+              cpu: 500m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodetester
+  namespace: test
+  labels:
+    app: nodetester
+spec:
+  selector:
+    app: nodetester
+  ports:
+  - port: 5000
+    name: http
+    targetPort: 5000
